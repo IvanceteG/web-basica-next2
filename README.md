@@ -1,36 +1,92 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# web-basica-next
 
-## Getting Started
+Projecte web bàsic construït amb **Next.js 16**, **Tailwind CSS**, **Prisma** i **Auth.js v5**. Inclou un blog públic i un backoffice protegit per rol.
 
-First, run the development server:
+## Tecnologies
+
+- [Next.js 16](https://nextjs.org) — App Router + Turbopack
+- [Tailwind CSS v4](https://tailwindcss.com)
+- [Prisma 7](https://www.prisma.io) — ORM amb PostgreSQL
+- [Auth.js v5 (next-auth@beta)](https://authjs.dev) — autenticació per credencials amb JWT
+- [Neon](https://neon.tech) — PostgreSQL serverless (producció)
+- [Vercel](https://vercel.com) — desplegament
+
+## Estructura
+
+```
+src/
+├── app/
+│   ├── (site)/          # Pàgines públiques (inici, blog, contacte, login)
+│   ├── (dashboard)/     # Tauler d'usuari autenticat
+│   ├── admin/           # Backoffice (ADMIN / EDITOR)
+│   └── api/             # Endpoints REST (auth + admin posts)
+├── lib/
+│   ├── auth.js          # Configuració Auth.js
+│   ├── api-auth.js      # Helper de protecció per APIs
+│   └── prisma.js        # Client Prisma singleton
+└── proxy.js             # Middleware de protecció de rutes
+```
+
+## Posada en marxa local
+
+### Requisits
+
+- Node.js `>=22.12`
+- Docker Desktop (per la BD local) o compte a [Neon](https://neon.tech)
+
+### 1. Instal·la dependències
+
+```bash
+npm install
+```
+
+### 2. Configura les variables d'entorn
+
+Copia `.env.example` a `.env` i omple els valors:
+
+```bash
+cp .env.example .env
+```
+
+```dotenv
+DATABASE_URL="postgresql://blog:blogsecret@localhost:5432/blogdb?schema=public"
+AUTH_SECRET="el-teu-secret-aqui"
+```
+
+> Per generar un secret: `openssl rand -hex 32`
+
+### 3. Arrenca la base de dades (Docker)
+
+```bash
+docker-compose up -d
+```
+
+### 4. Aplica l'esquema a la BD
+
+```bash
+npx prisma db push
+```
+
+### 5. Arrenca el servidor de desenvolupament
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Obri [http://localhost:3000](http://localhost:3000).
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+## Desplegament a Vercel
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. Importa el repositori a [Vercel](https://vercel.com)
+2. Afegeix les variables d'entorn al projecte:
+   - `DATABASE_URL` — URL de connexió a Neon (o altra BD PostgreSQL)
+   - `AUTH_SECRET` — secret per signar els tokens JWT
+3. Desplega — el `postinstall` genera el client Prisma automàticament
 
-## Learn More
+## Rols d'usuari
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Rol | Accés |
+|-----|-------|
+| `ADMIN` | Backoffice complet |
+| `EDITOR` | Backoffice complet |
+| — | Només pàgines públiques |
